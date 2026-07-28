@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Pipeline — Real-Time Dashboard</title>
+    <meta name="description" content="Real-time monitoring dashboard for the concurrent image processing pipeline">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+</head>
+<body>
+
+    <!-- Toast notification container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </div>
+            <div>
+                <h1>Image Pipeline</h1>
+                <p class="header-subtitle">Real-Time Processing Dashboard</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="connection-badge" id="connection-badge">
+                <span class="connection-dot" id="connection-dot"></span>
+                <span id="connection-text">Connecting…</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Pipeline Flow Visualization -->
+    <section class="pipeline-flow">
+        <div class="pipeline-stage" id="stage-upload">
+            <div class="stage-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <span class="stage-label">Upload</span>
+        </div>
+        <div class="pipeline-connector" id="conn-1">
+            <div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div>
+        </div>
+        <div class="pipeline-stage" id="stage-queue">
+            <div class="stage-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </div>
+            <span class="stage-label">Queue</span>
+            <span class="stage-badge" id="queue-badge">0</span>
+        </div>
+        <div class="pipeline-connector" id="conn-2">
+            <div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div>
+        </div>
+        <div class="pipeline-stage" id="stage-workers">
+            <div class="stage-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <span class="stage-label">Workers</span>
+            <span class="stage-badge" id="workers-badge">0</span>
+        </div>
+        <div class="pipeline-connector" id="conn-3">
+            <div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div>
+        </div>
+        <div class="pipeline-stage" id="stage-output">
+            <div class="stage-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <span class="stage-label">Output</span>
+            <span class="stage-badge stage-badge-success" id="output-badge">0</span>
+        </div>
+    </section>
+
+    <!-- Stats Cards -->
+    <section class="stats-row">
+        <div class="stat-card">
+            <span class="stat-value" id="stat-total">0</span>
+            <span class="stat-label">Total Jobs</span>
+            <div class="stat-icon stat-icon-info">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="stat-queued">0</span>
+            <span class="stat-label">In Queue</span>
+            <div class="stat-icon stat-icon-warning">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="stat-active">0</span>
+            <span class="stat-label">Active Workers</span>
+            <div class="stat-icon stat-icon-accent">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="stat-completed">0</span>
+            <span class="stat-label">Completed</span>
+            <div class="stat-icon stat-icon-success">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="stat-dlq">0</span>
+            <span class="stat-label">Dead Letters</span>
+            <div class="stat-icon stat-icon-error">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value" id="stat-throughput">0.0</span>
+            <span class="stat-label">ops/sec</span>
+            <div class="stat-icon stat-icon-info">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="main-content">
+        <!-- Left Column -->
+        <div class="left-panel">
+            <!-- Upload Card -->
+            <div class="card">
+                <h2 class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Image
+                </h2>
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-content" id="dropzone-content">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <p>Drop image here or <span class="dropzone-link">browse</span></p>
+                        <span class="dropzone-hint">PNG, JPEG, GIF supported</span>
+                    </div>
+                    <div class="dropzone-preview" id="dropzone-preview" hidden>
+                        <img id="preview-img" alt="Preview">
+                        <div class="preview-info">
+                            <span class="preview-name" id="preview-name"></span>
+                            <span class="preview-size" id="preview-size"></span>
+                            <button class="preview-clear" id="preview-clear" title="Clear">✕</button>
+                        </div>
+                    </div>
+                    <input type="file" id="file-input" accept="image/*" hidden>
+                </div>
+                <div class="upload-controls">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="width-input">Width</label>
+                            <input type="number" id="width-input" placeholder="800" min="1" max="10000">
+                        </div>
+                        <div class="input-group">
+                            <label for="height-input">Height</label>
+                            <input type="number" id="height-input" placeholder="600" min="1" max="10000">
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="upload-btn" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Upload &amp; Process
+                    </button>
+                </div>
+            </div>
+
+            <!-- Load Test Card -->
+            <div class="card">
+                <h2 class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Bulk Upload (Load Test)
+                </h2>
+                <div class="upload-controls" style="margin-top: 1rem;">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="bulk-count">Number of Images</label>
+                            <input type="number" id="bulk-count" value="50" min="1" max="1000">
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="bulk-upload-btn" style="background-color: #f59e0b;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Run Load Test
+                    </button>
+                </div>
+            </div>
+
+            <!-- Job History -->
+            <div class="card">
+                <h2 class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Job History
+                </h2>
+                <div class="job-list" id="job-list">
+                    <div class="empty-state" id="jobs-empty">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <p>No jobs yet — upload an image to get started</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-panel">
+            <!-- Worker Pool -->
+            <div class="card">
+                <h2 class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Worker Pool
+                </h2>
+                <div class="worker-grid" id="worker-grid">
+                    <!-- Worker cards injected by JS -->
+                </div>
+            </div>
+
+            <!-- Queue Gauge -->
+            <div class="card">
+                <h2 class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Queue Pressure
+                </h2>
+                <div class="queue-gauge-container">
+                    <div class="queue-gauge">
+                        <div class="queue-fill" id="queue-fill"></div>
+                    </div>
+                    <div class="queue-info">
+                        <span id="queue-text">0 / 0</span>
+                        <span class="queue-pct" id="queue-pct">0%</span>
+                    </div>
+                </div>
+                <div class="backpressure-alert" id="backpressure-alert" hidden>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Backpressure active — new requests rejected
+                </div>
+            </div>
+
+            <!-- Dead Letter Queue -->
+            <div class="card">
+                <h2 class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    Dead Letter Queue
+                    <span class="dlq-count" id="dlq-count" hidden>0</span>
+                </h2>
+                <div class="dlq-list" id="dlq-list">
+                    <div class="empty-state" id="dlq-empty">
+                        <p>No dead-lettered jobs ✓</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="/app.js"></script>
+</body>
+</html>
